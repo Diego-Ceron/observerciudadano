@@ -4,7 +4,7 @@ Sistema de mensajería para notificar a ciudadanos sobre proyectos de votación 
 
 ## 📋 Descripción
 
-Este sistema permite enviar notificaciones de votación a ciudadanos de diferentes distritos. Implementa el patrón Observer con polimorfismo para distinguir entre:
+Este sistema envía notificaciones de votación a ciudadanos de diferentes distritos. Implementa el patrón Observer con polimorfismo para distinguir entre:
 
 - **Proyectos de Distrito**: Solo los ciudadanos del distrito específico reciben notificaciones
 - **Proyectos Corredor**: Todos los ciudadanos de todos los distritos reciben notificaciones
@@ -161,10 +161,3 @@ sistema.enviarConvocatoriaVotacion(corredor);
 **Ciudadano del Distrito 3** (sin proyectos específicos) recibirá:
 - ✗ No recibe proyectos de otros distritos
 - ✓ Todos los proyectos Corredor
-
-### Ventajas del Sistema
-
-- **Notificación Consolidada**: Un solo mensaje con todos los proyectos relevantes
-- **Filtrado Automático**: El polimorfismo decide qué proyectos mostrar sin condicionales explícitos
-- **Escalabilidad**: Fácil agregar nuevos tipos de proyectos implementando `Proyecto`
-- **Mantenibilidad**: La lógica de notificación está encapsulada en cada tipo de proyecto

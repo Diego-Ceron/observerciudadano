@@ -106,23 +106,54 @@ java -cp bin Main
 import modelo.*;
 import controlador.*;
 import vista.*;
+import java.util.ArrayList;
+import java.util.List;
 
 // Crear componentes MVC
 VistaConsola vista = new VistaConsola();
 SistemaMensajeria sistema = new SistemaMensajeria();
 
-// Registrar ciudadanos de diferentes distritos
-sistema.registrarObserver(new Ciudadano("Juan", "1", "juan@email.com"));
-sistema.registrarObserver(new Ciudadano("María", "2", "maria@email.com"));
+// Crear ciudadanos de diferentes distritos
+List<Ciudadano> ciudadanos = new ArrayList<>();
+ciudadanos.add(new Ciudadano("Juan Pérez", "1", "juan.perez@email.com"));
+ciudadanos.add(new Ciudadano("María García", "1", "maria.garcia@email.com"));
+ciudadanos.add(new Ciudadano("Carlos López", "2", "carlos.lopez@email.com"));
+ciudadanos.add(new Ciudadano("Ana Martínez", "2", "ana.martinez@email.com"));
 
-// Proyecto de distrito: solo notifica a ciudadanos del distrito 1
-Proyecto proyectoNorte = new Distrito("Parque", "Descripción", "1");
-sistema.enviarConvocatoriaVotacion(proyectoNorte);
+// Registrar todos los ciudadanos
+sistema.registrarCiudadanos(ciudadanos);
 
-// Proyecto corredor: notifica a TODOS los ciudadanos
-Proyecto corredor = new Corredor("Corredor Verde", "Descripción");
-sistema.enviarConvocatoriaVotacion(corredor);
+// Añadir proyectos a la convocatoria
+// Proyecto de Distrito 1 - Solo para ciudadanos del Distrito 1
+Proyecto proyectoDistrito1 = new Distrito(
+    "Parque Recreativo Distrito 1",
+    "Construcción de parque recreativo con áreas verdes",
+    "1"
+);
+sistema.agregarProyectoANotificar(proyectoDistrito1);
+
+// Proyecto de Distrito 2 - Solo para ciudadanos del Distrito 2
+Proyecto proyectoDistrito2 = new Distrito(
+    "Biblioteca Municipal Distrito 2",
+    "Remodelación y ampliación de la biblioteca municipal",
+    "2"
+);
+sistema.agregarProyectoANotificar(proyectoDistrito2);
+
+// Proyecto Corredor - Para TODOS los ciudadanos
+Proyecto corredor = new Corredor(
+    "Corredor Verde Metropolitano",
+    "Creación de corredor verde que conecta todos los distritos"
+);
+sistema.agregarProyectoANotificar(corredor);
+
+// Enviar todas las convocatorias - Cada ciudadano recibe sus proyectos
+sistema.enviarConvocatorias();
 ```
+
+**Resultado**: 
+- Juan y María reciben: 1 proyecto del Distrito 1 + 1 proyecto Corredor
+- Carlos y Ana reciben: 1 proyecto del Distrito 2 + 1 proyecto Corredor
 
 ## 📬 Cómo Funciona el Sistema de Notificaciones
 
@@ -161,3 +192,54 @@ sistema.enviarConvocatoriaVotacion(corredor);
 **Ciudadano del Distrito 3** (sin proyectos específicos) recibirá:
 - ✗ No recibe proyectos de otros distritos
 - ✓ Todos los proyectos Corredor
+
+## 🎯 Patrón Observer
+
+El patrón **Observer** establece una relación **uno-a-muchos** donde un objeto (Subject) notifica automáticamente a múltiples objetos (Observers) cuando su estado cambia.
+
+### Cómo Funciona
+
+```
+Subject (SistemaMensajeria)
+    │
+    ├─ registrarObserver()    → Agrega un observador
+    ├─ eliminarObserver()     → Elimina un observador
+    └─ notificarObservers()   → Notifica a TODOS
+         │
+         ├─ Observer1.actualizar()
+         ├─ Observer2.actualizar()
+         ├─ Observer3.actualizar()
+         └─ Observer4.actualizar()
+```
+
+### En el Proyecto
+
+1. **SistemaMensajeria** (Subject)
+   - Mantiene lista de ciudadanos
+   - Acumula proyectos
+   - Notifica a todos los ciudadanos
+
+2. **Ciudadano** (Observer)
+   - Implementa `actualizar(Proyecto)`
+   - Recibe notificaciones automáticamente
+   - Filtra proyectos según su distrito
+
+3. **Flujo Completo**
+   ```
+   agregarProyectoANotificar(proyecto)
+        ↓
+   enviarConvocatorias()
+        ↓
+   Notifica a todos: ciudadano.actualizar(proyecto)
+        ↓
+   Cada ciudadano filtra mediante Proyecto.debeNotificar()
+        ↓
+   Acumula solo sus proyectos
+   ```
+
+### Ventajas del Patrón Observer
+
+- **Desacoplamiento**: Subject no conoce detalles de los Observers
+- **Automatización**: Las notificaciones se envían automáticamente
+- **Dinamismo**: Observadores pueden agregarse/eliminarse en runtime
+- **Reutilizable**: Cualquier objeto puede ser Observer implementando la interfaz

@@ -1,1 +1,170 @@
-# observerciudadano
+# Sistema de Votación Ciudadana - Patrón Observer
+
+Sistema de mensajería para notificar a ciudadanos sobre proyectos de votación utilizando el patrón de diseño Observer con polimorfismo.
+
+## 📋 Descripción
+
+Este sistema permite enviar notificaciones de votación a ciudadanos de diferentes distritos. Implementa el patrón Observer con polimorfismo para distinguir entre:
+
+- **Proyectos de Distrito**: Solo los ciudadanos del distrito específico reciben notificaciones
+- **Proyectos Corredor**: Todos los ciudadanos de todos los distritos reciben notificaciones
+
+## 🏗️ Arquitectura
+
+### Estructura MVC
+
+```
+observerciudadano/
+├── src/
+│   ├── modelo/              (Modelo - Lógica de negocio)
+│   │   ├── Observer.java    - Interfaz Observer
+│   │   ├── Subject.java     - Interfaz Subject
+│   │   ├── Proyecto.java    - Clase abstracta base
+│   │   ├── Distrito.java    - Proyectos de distrito
+│   │   ├── Corredor.java    - Proyectos corredor
+│   │   └── Ciudadano.java   - Observador (ciudadano)
+│   │
+│   ├── controlador/         (Controlador - Gestión de flujo)
+│   │   └── SistemaMensajeria.java - Coordina notificaciones
+│   │
+│   ├── vista/               (Vista - Presentación)
+│   │   └── VistaConsola.java - Interfaz de consola
+│   │
+│   └── Main.java            - Punto de entrada
+│
+├── bin/                     (Archivos .class compilados)
+└── README.md
+```
+
+### Patrón Observer
+- **Subject**: `SistemaMensajeria` - Gestiona la lista de observadores y notificaciones
+- **Observer**: `Ciudadano` - Recibe y procesa notificaciones según su distrito
+- **Polimorfismo**: Los proyectos implementan `debeNotificar()` de forma diferente
+
+### Jerarquía de Clases
+
+```
+Observer (interface)
+    └── Ciudadano
+
+Subject (interface)
+    └── SistemaMensajeria
+
+Proyecto (abstract)
+    ├── Distrito
+    └── Corredor
+```
+
+## 📦 Componentes del Proyecto
+
+### Modelo (`src/modelo/`)
+- `Observer.java` - Interfaz del patrón Observer
+- `Subject.java` - Interfaz del Subject
+- `Proyecto.java` - Clase abstracta base para proyectos
+- `Distrito.java` - Proyectos específicos de distrito
+- `Corredor.java` - Proyectos para todos los distritos
+- `Ciudadano.java` - Implementación del Observer
+
+### Controlador (`src/controlador/`)
+- `SistemaMensajeria.java` - Gestiona notificaciones y observadores
+
+### Vista (`src/vista/`)
+- `VistaConsola.java` - Presenta información en consola
+
+### Principal
+- `Main.java` - Punto de entrada y demostración
+
+## 🎯 Polimorfismo en Acción
+
+El polimorfismo se aplica en dos niveles:
+
+1. **En Proyecto.debeNotificar()**:
+   - `Distrito`: Retorna `true` solo si el distrito coincide
+   - `Corredor`: Siempre retorna `true` (para todos)
+
+2. **En Ciudadano.actualizar()**:
+   - Usa el método polimórfico del proyecto para decidir si procesar la notificación
+   - Cada ciudadano filtra automáticamente según su distrito
+
+## 🚀 Compilación y Ejecución
+
+### Compilar el proyecto
+
+```cmd
+javac -d bin -encoding UTF-8 src\modelo\*.java src\controlador\*.java src\vista\*.java src\Main.java
+```
+
+### Ejecutar el programa
+
+```cmd
+java -cp bin Main
+```
+
+## 💡 Ejemplo de Uso
+
+```java
+import modelo.*;
+import controlador.*;
+import vista.*;
+
+// Crear componentes MVC
+VistaConsola vista = new VistaConsola();
+SistemaMensajeria sistema = new SistemaMensajeria();
+
+// Registrar ciudadanos de diferentes distritos
+sistema.registrarObserver(new Ciudadano("Juan", "1", "juan@email.com"));
+sistema.registrarObserver(new Ciudadano("María", "2", "maria@email.com"));
+
+// Proyecto de distrito: solo notifica a ciudadanos del distrito 1
+Proyecto proyectoNorte = new Distrito("Parque", "Descripción", "1");
+sistema.enviarConvocatoriaVotacion(proyectoNorte);
+
+// Proyecto corredor: notifica a TODOS los ciudadanos
+Proyecto corredor = new Corredor("Corredor Verde", "Descripción");
+sistema.enviarConvocatoriaVotacion(corredor);
+```
+
+## 📬 Cómo Funciona el Sistema de Notificaciones
+
+### Flujo de Notificación
+
+1. **Registro de Ciudadanos**
+   - Cada ciudadano se registra en el `SistemaMensajeria` con su nombre, distrito y email
+   - El sistema mantiene una lista de todos los ciudadanos observadores
+
+2. **Acumulación de Proyectos**
+   - Los proyectos se añaden al sistema mediante `agregarProyectoANotificar()`
+   - Pueden ser proyectos de **Distrito** (específicos) o **Corredor** (globales)
+   - Todos los proyectos se acumulan antes de enviar las notificaciones
+
+3. **Envío de Convocatorias**
+   - Al llamar `enviarConvocatorias()`, el sistema notifica a todos los ciudadanos
+   - Cada ciudadano recibe **todos los proyectos** y decide cuáles le corresponden
+
+4. **Filtrado Polimórfico**
+   - **Proyectos Distrito**: El método `debeNotificar()` compara el distrito del proyecto con el del ciudadano
+   - **Proyectos Corredor**: El método `debeNotificar()` siempre retorna `true` (notifica a todos)
+   - El ciudadano **solo acumula** los proyectos que le corresponden según esta lógica
+
+5. **Presentación de Resultados**
+   - Cada ciudadano muestra una notificación consolidada con **todos sus proyectos**:
+     - Proyectos de su distrito (si existen)
+     - Proyectos corredor (siempre reciben)
+   - La notificación incluye: nombre del proyecto, tipo y descripción
+
+### Ejemplo de Notificación
+
+**Ciudadano del Distrito 1** recibirá:
+- ✓ Proyectos del Distrito 1
+- ✓ Todos los proyectos Corredor
+
+**Ciudadano del Distrito 3** (sin proyectos específicos) recibirá:
+- ✗ No recibe proyectos de otros distritos
+- ✓ Todos los proyectos Corredor
+
+### Ventajas del Sistema
+
+- **Notificación Consolidada**: Un solo mensaje con todos los proyectos relevantes
+- **Filtrado Automático**: El polimorfismo decide qué proyectos mostrar sin condicionales explícitos
+- **Escalabilidad**: Fácil agregar nuevos tipos de proyectos implementando `Proyecto`
+- **Mantenibilidad**: La lógica de notificación está encapsulada en cada tipo de proyecto

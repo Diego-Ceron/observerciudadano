@@ -236,10 +236,3 @@ Subject (SistemaMensajeria)
         ↓
    Acumula solo sus proyectos
    ```
-
-### Ventajas del Patrón Observer
-
-- **Desacoplamiento**: Subject no conoce detalles de los Observers
-- **Automatización**: Las notificaciones se envían automáticamente
-- **Dinamismo**: Observadores pueden agregarse/eliminarse en runtime
-- **Reutilizable**: Cualquier objeto puede ser Observer implementando la interfaz
